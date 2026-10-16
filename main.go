@@ -24,7 +24,10 @@ func main() {
 		exit("Failed to parse the provided  CSV file")
 	}
 
-	problems := parseLines(lines)
+	problems, err := parseLines(lines)
+	if err != nil {
+		exit(err.Error())
+	}
 
 	timer := time.NewTimer(time.Duration(*timeLimit) * time.Second)
 
@@ -54,15 +57,18 @@ problemloop:
 	fmt.Printf("You scored %d out of %d.\n", correct, len(problems))
 }
 
-func parseLines(lines [][]string) []problem {
+func parseLines(lines [][]string) ([]problem, error) {
 	ret := make([]problem, len(lines))
 	for i, line := range lines {
+		if len(line) < 2 {
+			return nil, fmt.Errorf("line %d: expected 'question,answer', got %d field(s)", i+1, len(line))
+		}
 		ret[i] = problem{
 			q: line[0],
 			a: strings.TrimSpace(line[1]),
 		}
 	}
-	return ret
+	return ret, nil
 }
 
 type problem struct {
